@@ -29,15 +29,10 @@ def findRandom():
 
     randGame = randGame.lower()
     re.sub(r"[^a-zA-Z0-9\s]", '', randGame)
-
-    #THIS sucks
     randGame = randGame.replace(" ", '-')
-    randGame = randGame.replace(':', '')
-    randGame = randGame.replace('/', '')
-    randGame = randGame.replace('&', "and")
-    randGame = randGame.replace('!', '')
-    randGame = randGame.replace('.', '')
-
+    randGame = re.sub(r'[^\w\s-]', '', randGame).replace(' ', '-')
+    randGame = randGame.replace('&', 'and')
+  
     #DELETE. FOR TESTING
     print("after: " + randGame)
 
@@ -115,7 +110,9 @@ def findGame(gameTitle):
     print("\nSummary:", summary)
 
     #Print platforms
-    if len(platforms) == 1:
+    if len(platforms) == 0:
+        print("\nPlatforms: N/A")
+    elif len(platforms) == 1:
         print("\nPlatforms:", platforms[0])
     else:
         print("\nPlatforms:", end=" ")
