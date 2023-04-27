@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import random
+import re
 
 def listPopular(num):
     if num == None:
@@ -8,7 +9,6 @@ def listPopular(num):
     url = "https://www.backloggd.com/games/lib/popular?page="
     num = str(num).strip()
     url += num
-
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -17,21 +17,39 @@ def listPopular(num):
     gameElements = soup.findAll('div', class_='game-text-centered')
     [games.append(game.text.lstrip()) for game in gameElements]
     
-    i = 1 if int(num) == 1 else 36*(int(num)-1)+1
-    for game in games:
-        print(str(i) + ".", end=" ")
-        print(game)
-        i += 1
+    return games
 
 def findRandom():
-    randNum = random.randint(1, 3644)
-    listPopular(randNum)
+    randNum = random.randint(1, 3500)
+    games = listPopular(randNum)
+    randGame = games[randNum % len(games)-1]
 
+    #DELETE. FOR TESTING
+    print("Before: " + randGame)
+
+    randGame = randGame.lower()
+    re.sub(r"[^a-zA-Z0-9\s]", '', randGame)
+
+    #THIS sucks
+    randGame = randGame.replace(" ", '-')
+    randGame = randGame.replace(':', '')
+    randGame = randGame.replace('/', '')
+    randGame = randGame.replace('&', "and")
+    randGame = randGame.replace('!', '')
+    randGame = randGame.replace('.', '')
+
+    #DELETE. FOR TESTING
+    print("after: " + randGame)
+
+    findGame(randGame)
 
 def findGame(gameTitle):
     # URL of the page to scrape
     url = "https://www.backloggd.com/games/"
     url += gameTitle
+
+    #DELETE. FOR TESTING
+    print(url)
 
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -45,9 +63,11 @@ def findGame(gameTitle):
     releaseDate = releaseDateElement.text.strip()
 
     #Find developers
-    studioElement = soup.find('div', attrs={'class':'col-auto pl-lg-1 sub-title'}).findAll('a')
     studio = []
-    [studio.append(text.text) for text in studioElement]
+    studioElement = soup.find('div', attrs={'class':'col-auto pl-lg-1 sub-title'})
+    if studioElement is not None:
+        studioElement = soup.find('div', attrs={'class':'col-auto pl-lg-1 sub-title'}).findAll('a')
+        [studio.append(text.text) for text in studioElement]
 
     #Find summary and score
     score = soup.find('div', attrs={'id':'score'}).find('h1').text
@@ -70,7 +90,9 @@ def findGame(gameTitle):
 
 
     #Print studio / producers
-    if len(studio) == 1:
+    if len(studio) == 0:
+        print("By: N/A")
+    elif len(studio) == 1:
         print("By:", studio[0])
     else:
         print("By:", end=" ")
@@ -80,7 +102,9 @@ def findGame(gameTitle):
 
     print("Average score:", score)
     #Print genres
-    if len(genres)==1:
+    if len(genres) == 0:
+        print("Genres: N/A")
+    elif len(genres)==1:
         print("Genres:", genres[0])
     else:
         print("Genres:", end=" ")
@@ -129,7 +153,7 @@ while True:
         except Exception:
             print("Something went wrong, please check spelling and omit special characters from game title.")
     elif userInput == "random":
-        print("PLACEHOLDER")
+        findRandom()
     elif userInput[:4] == "list":
         num = 1
         try:
@@ -141,7 +165,12 @@ while True:
         except Exception:
             print("Please enter input as 'list <number>'. Number must be in range 1 - 3644.")
         try:
-            listPopular(num)
+            games = listPopular(num)
+            i = 1 if int(num) == 1 else 36*(int(num)-1)+1
+            for game in games:
+                print(str(i) + ".", end=" ")
+                print(game)
+                i += 1
         except Exception:
             print("Something went wrong")
 
