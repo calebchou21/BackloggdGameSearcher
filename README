@@ -1,0 +1,5 @@
+This is a simple program that scrapres the website Backloggd.com to search for information about games.
+
+The program allows the user to search for a specific game, find a random game, and list popular games. 
+
+For information on how to use, run the program and input 'help'.
