@@ -19,13 +19,14 @@ def listPopular(num):
     
     return games
 
-def findRandom():
-    randNum = random.randint(1, 3500)
+def findRandom(lower, upper):
+    if lower == None:
+        lower = 1
+    if upper == None:
+        upper = 3500
+    randNum = random.randint(lower, upper)
     games = listPopular(randNum)
     randGame = games[randNum % len(games)-1]
-
-    #DELETE. FOR TESTING
-    print("Before: " + randGame)
 
     randGame = randGame.lower()
     re.sub(r"[^a-zA-Z0-9\s]", '', randGame)
@@ -33,18 +34,12 @@ def findRandom():
     randGame = re.sub(r'[^\w\s-]', '', randGame).replace(' ', '-')
     randGame = randGame.replace('&', 'and')
   
-    #DELETE. FOR TESTING
-    print("after: " + randGame)
-
     findGame(randGame)
 
 def findGame(gameTitle):
     # URL of the page to scrape
     url = "https://www.backloggd.com/games/"
     url += gameTitle
-
-    #DELETE. FOR TESTING
-    print(url)
 
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -133,12 +128,26 @@ while True:
     elif userInput == "h" or userInput == "help":
         print("\nCommands:")
         print("h or help: Brings up this menu")
-        print("'quit' or 'exit': Exits the program")
-        print("'search <game-title>': Searches for the game with the title inputed")
-        print("'list <page-number>': Prints list of 36 games ranked by popularity. Pages range from 1 to 3644")
+        print("quit or exit: Exits the program")
+        print("search <game-title>: Searches for the game with the title inputed")
+        print("list <page-number>: Prints list of 36 games ranked by popularity. Pages range from 1 to 3644")
+        print("random: Prints the information of a random game.")
+        print("random <page-number>: Prints the information of a random game on a page number from 1 through <page-number>.")
+        print("random <page-number1> <page-number2>: Prints the information of a random game on a page number from <page-number1> through <page-number2>.")
+
+        print("\nTips:")
         print("If title is incorrect, make sure that you are ommitting special characters and check spelling for correctness.")
         print("Some games, especially installments in a series will have sub-titles that must be entered as well.\n")
-        print("An example input for a title: 'search Elden Ring' or 'search marvels spider man miles morales\n")
+
+        print("\nExamples:")
+        print("search Elden Ring")
+        print("search marvels spider man miles morales")
+        print("list 10")
+        print("random")
+        print("random 10")
+        print("random 5 10")
+
+        print("\nWarning: Because of how the URLS are generated, some titles, especially those with special or odd characters will result in errors.\n")
     elif userInput[:6] == "search":
         title = userInput[7:]
         title = title.lower()
@@ -149,8 +158,23 @@ while True:
             findGame(title)
         except Exception:
             print("Something went wrong, please check spelling and omit special characters from game title.")
-    elif userInput == "random":
-        findRandom()
+    elif userInput[:6] == "random":
+        params = userInput.split(" ")
+        if len(params) > 3:
+            print("Please enter only 0, 1 or 2 numbers after 'random'. Type help for examples.")
+            continue
+        elif len(params) == 2:
+            try:
+                findRandom(1, int(params[1]))
+            except Exception:
+                print("Something went wrong. Ensure parameters are in range 1-3500")
+        elif len(params) == 3:
+            try:
+                findRandom(int(params[1]), int(params[2]))
+            except Exception:
+                print("Something went wrong. Ensure parameters are in range 1-3500")
+        else:
+            findRandom(None, None)
     elif userInput[:4] == "list":
         num = 1
         try:
